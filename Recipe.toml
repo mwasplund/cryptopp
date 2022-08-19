@@ -1,6 +1,6 @@
 Name = "CryptoPP"
-Language = "C++"
-Version = "1.0.1"
+Language = "C++|0.1"
+Version = "1.0.2"
 EnableWarningsAsErrors = false
 Interface = "Interface.cpp"
 Source = [
