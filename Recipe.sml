@@ -1,6 +1,6 @@
 Name: "CryptoPP"
 Language: "C++|0.1"
-Version: "1.2.0"
+Version: "1.2.1"
 EnableWarningsAsErrors: false
 Interface: "Interface.cpp"
 Source: [
@@ -105,7 +105,7 @@ Source: [
     "mqueue.cpp"
     # "mqv.cpp"
     "nbtheory.cpp"
-    # "oaep.cpp"
+    "oaep.cpp"
     "osrng.cpp"
     # "padlkrng.cpp"
     # "panama.cpp"
