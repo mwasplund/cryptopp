@@ -1,6 +1,6 @@
 Name: 'CryptoPP'
 Language: 'C++|0'
-Version: '1.2.2'
+Version: '1.2.3'
 EnableWarningsAsErrors: false
 Interface: 'Interface.cpp'
 Source: [
@@ -178,5 +178,12 @@ Source: [
     # 'zlib.cpp'
 ]
 AssemblySource: [
-    'x64dll.asm'
+    {
+        Filter: {
+            Platform: "Win32"
+        }
+        Files: [
+            'x64dll.asm'
+        ]
+    }
 ]
