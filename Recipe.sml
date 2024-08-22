@@ -180,7 +180,7 @@ Source: [
 AssemblySource: [
     {
         Filter: {
-            Platform: "Win32"
+            Platform: 'Win32'
         }
         Files: [
             'x64dll.asm'
