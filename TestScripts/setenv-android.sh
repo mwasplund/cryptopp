@@ -97,23 +97,24 @@ unset ANDROID_SYSROOT
 
 ANDROID_CPU=$(tr '[:upper:]' '[:lower:]' <<< "${ANDROID_CPU}")
 
-if [[ "$ANDROID_CPU" == "amd64" || "$ANDROID_CPU" == "x86_64" ]] ; then
+if [[ "${ANDROID_CPU}" == "amd64" || "${ANDROID_CPU}" == "x86_64" ]] ; then
     ANDROID_CPU=x86_64
 fi
 
-if [[ "$ANDROID_CPU" == "i386" || "$ANDROID_CPU" == "i686" ]] ; then
+if [[ "${ANDROID_CPU}" == "i386" || "${ANDROID_CPU}" == "i686" ]] ; then
     ANDROID_CPU=i686
 fi
 
-if [[ "$ANDROID_CPU" == "armv7"* || "$ANDROID_CPU" == "armeabi"* ]] ; then
+if [[ "${ANDROID_CPU}" == "armv7"* || "${ANDROID_CPU}" == "armeabi"* ]] ; then
     ANDROID_CPU=armeabi-v7a
 fi
 
-if [[ "$ANDROID_CPU" == "aarch64" || "$ANDROID_CPU" == "arm64"* || "$ANDROID_CPU" == "armv8"* ]] ; then
+if [[ "${ANDROID_CPU}" == "aarch64" || "${ANDROID_CPU}" == "arm64"* || "${ANDROID_CPU}" == "armv8"* ]] ; then
     ANDROID_CPU=arm64-v8a
 fi
 
-echo "Configuring for $ANDROID_SDK ($ANDROID_CPU)"
+# Debug
+# echo "Configuring for ${ANDROID_API} (${ANDROID_CPU})"
 
 ########################################
 #####         Environment          #####
@@ -198,16 +199,43 @@ fi
 # add -std=c++11 -stdlib=libc++ to CXXFLAGS. This is
 # consistent with Android.mk and 'APP_STL := c++_shared'.
 
-case "$ANDROID_CPU" in
+case "${ANDROID_CPU}" in
   armv7*|armeabi*)
     CC="armv7a-linux-androideabi${ANDROID_API}-clang"
     CXX="armv7a-linux-androideabi${ANDROID_API}-clang++"
     LD="arm-linux-androideabi-ld"
     AS="arm-linux-androideabi-as"
     AR="arm-linux-androideabi-ar"
+    NM="arm-linux-androideabi-nm"
     RANLIB="arm-linux-androideabi-ranlib"
     STRIP="arm-linux-androideabi-strip"
     OBJDUMP="arm-linux-androideabi-objdump"
+
+    # https://github.com/weidai11/cryptopp/pull/1119
+    if [ -n "${ANDROID_LD}" ]; then
+        if [ "$LD" != "ld.lld" ]; then
+            LD="arm-linux-androideabi-${ANDROID_LD}"
+        fi
+    elif [ "${ANDROID_API}" -ge 22 ]; then
+        # New default linker
+        # https://android.googlesource.com/platform/ndk/+/refs/heads/ndk-release-r22/docs/BuildSystemMaintainers.md#Linkers
+        LD="ld.lld"
+    elif [ "${ANDROID_API}" -ge 19 ]; then
+        # New default linker. BFD used on all excpet aarch64; Gold used on aarch64
+        # https://android.googlesource.com/platform/ndk/+/refs/heads/ndk-release-r19/docs/BuildSystemMaintainers.md#Linkers
+        LD="arm-linux-androideabi-ld.bfd"
+    fi
+
+    # As of NDK r22, there are new names for some tools.
+    # https://developer.android.com/ndk/guides/other_build_systems
+    if [ "${ANDROID_API}" -ge 22 ]; then
+        AR="llvm-ar"
+        AS="llvm-as"
+        NM="llvm-nm"
+        OBJDUMP="llvm-objdump"
+        RANLIB="llvm-ranlib"
+        STRIP="llvm-strip"
+    fi
 
     # You may need this on older NDKs
     # ANDROID_CPPFLAGS="-D__ANDROID__=${ANDROID_API}"
@@ -231,9 +259,36 @@ case "$ANDROID_CPU" in
     LD="aarch64-linux-android-ld"
     AS="aarch64-linux-android-as"
     AR="aarch64-linux-android-ar"
+    NM="aarch64-linux-android-nm"
     RANLIB="aarch64-linux-android-ranlib"
     STRIP="aarch64-linux-android-strip"
     OBJDUMP="aarch64-linux-android-objdump"
+
+    # https://github.com/weidai11/cryptopp/pull/1119
+    if [ -n "${ANDROID_LD}" ]; then
+        if [ "$LD" != "ld.lld" ]; then
+            LD="aarch64-linux-android-${ANDROID_LD}"
+        fi
+    elif [ "${ANDROID_API}" -ge 22 ]; then
+        # New default linker
+        # https://android.googlesource.com/platform/ndk/+/refs/heads/ndk-release-r22/docs/BuildSystemMaintainers.md#Linkers
+        LD="ld.lld"
+    elif [ "${ANDROID_API}" -ge 19 ]; then
+        # New default linker. BFD used on all excpet aarch64; Gold used on aarch64
+        # https://android.googlesource.com/platform/ndk/+/refs/heads/ndk-release-r19/docs/BuildSystemMaintainers.md#Linkers
+        LD="aarch64-linux-android-ld.gold"
+    fi
+
+    # As of NDK r22, there are new names for some tools.
+    # https://developer.android.com/ndk/guides/other_build_systems
+    if [ "${ANDROID_API}" -ge 22 ]; then
+        AR="llvm-ar"
+        AS="llvm-as"
+        NM="llvm-nm"
+        OBJDUMP="llvm-objdump"
+        RANLIB="llvm-ranlib"
+        STRIP="llvm-strip"
+    fi
 
     # You may need this on older NDKs
     # ANDROID_CPPFLAGS="-D__ANDROID__=${ANDROID_API}"
@@ -254,20 +309,48 @@ case "$ANDROID_CPU" in
     LD="i686-linux-android-ld"
     AS="i686-linux-android-as"
     AR="i686-linux-android-ar"
+    NM="i686-linux-android-nm"
     RANLIB="i686-linux-android-ranlib"
     STRIP="i686-linux-android-strip"
     OBJDUMP="i686-linux-android-objdump"
 
+    # https://github.com/weidai11/cryptopp/pull/1119
+    if [ -n "${ANDROID_LD}" ]; then
+        if [ "$LD" != "ld.lld" ]; then
+            LD="i686-linux-android-${ANDROID_LD}"
+        fi
+    elif [ "${ANDROID_API}" -ge 22 ]; then
+        # New default linker
+        # https://android.googlesource.com/platform/ndk/+/refs/heads/ndk-release-r22/docs/BuildSystemMaintainers.md#Linkers
+        LD="ld.lld"
+    elif [ "${ANDROID_API}" -ge 19 ]; then
+        # New default linker. BFD used on all excpet aarch64; Gold used on aarch64
+        # https://android.googlesource.com/platform/ndk/+/refs/heads/ndk-release-r19/docs/BuildSystemMaintainers.md#Linkers
+        LD="i686-linux-android-ld.bfd"
+    fi
+
+    # As of NDK r22, there are new names for some tools.
+    # https://developer.android.com/ndk/guides/other_build_systems
+    if [ "${ANDROID_API}" -ge 22 ]; then
+        AR="llvm-ar"
+        AS="llvm-as"
+        NM="llvm-nm"
+        OBJDUMP="llvm-objdump"
+        RANLIB="llvm-ranlib"
+        STRIP="llvm-strip"
+    fi
+
     # You may need this on older NDKs
     # ANDROID_CPPFLAGS="-D__ANDROID__=${ANDROID_API}"
+    # Newer NDK's choke on -mtune=intel, so omit it
 
     ANDROID_CFLAGS="-target i686-none-linux-android${ANDROID_API}"
-    ANDROID_CFLAGS="${ANDROID_CFLAGS} -mtune=intel -mssse3 -mfpmath=sse"
+    ANDROID_CFLAGS="${ANDROID_CFLAGS} -mssse3 -mfpmath=sse"
     ANDROID_CFLAGS="${ANDROID_CFLAGS} -fstack-protector-strong -funwind-tables -fexceptions -frtti"
     ANDROID_CFLAGS="${ANDROID_CFLAGS} -fno-addrsig -fno-experimental-isel"
 
     ANDROID_CXXFLAGS="-target i686-none-linux-android${ANDROID_API}"
-    ANDROID_CXXFLAGS="${ANDROID_CXXFLAGS} -mtune=intel -mssse3 -mfpmath=sse"
+    ANDROID_CXXFLAGS="${ANDROID_CXXFLAGS} -mssse3 -mfpmath=sse"
     ANDROID_CXXFLAGS="${ANDROID_CXXFLAGS} -std=c++11 -stdlib=libc++"
     ANDROID_CXXFLAGS="${ANDROID_CXXFLAGS} -fstack-protector-strong -funwind-tables -fexceptions -frtti"
     ANDROID_CXXFLAGS="${ANDROID_CXXFLAGS} -fno-addrsig -fno-experimental-isel"
@@ -279,20 +362,48 @@ case "$ANDROID_CPU" in
     LD="x86_64-linux-android-ld"
     AS="x86_64-linux-android-as"
     AR="x86_64-linux-android-ar"
+    NM="x86_64-linux-android-nm"
     RANLIB="x86_64-linux-android-ranlib"
     STRIP="x86_64-linux-android-strip"
     OBJDUMP="x86_64-linux-android-objdump"
 
+    # https://github.com/weidai11/cryptopp/pull/1119
+    if [ -n "${ANDROID_LD}" ]; then
+        if [ "$LD" != "ld.lld" ]; then
+            LD="x86_64-linux-android-${ANDROID_LD}"
+        fi
+    elif [ "${ANDROID_API}" -ge 22 ]; then
+        # New default linker
+        # https://android.googlesource.com/platform/ndk/+/refs/heads/ndk-release-r22/docs/BuildSystemMaintainers.md#Linkers
+        LD="ld.lld"
+    elif [ "${ANDROID_API}" -ge 19 ]; then
+        # New default linker. BFD used on all excpet aarch64; Gold used on aarch64
+        # https://android.googlesource.com/platform/ndk/+/refs/heads/ndk-release-r19/docs/BuildSystemMaintainers.md#Linkers
+        LD="x86_64-linux-android-ld.bfd"
+    fi
+
+    # As of NDK r22, there are new names for some tools.
+    # https://developer.android.com/ndk/guides/other_build_systems
+    if [ "${ANDROID_API}" -ge 22 ]; then
+        AR="llvm-ar"
+        AS="llvm-as"
+        NM="llvm-nm"
+        OBJDUMP="llvm-objdump"
+        RANLIB="llvm-ranlib"
+        STRIP="llvm-strip"
+    fi
+
     # You may need this on older NDKs
     # ANDROID_CPPFLAGS="-D__ANDROID__=${ANDROID_API}"
+    # Newer NDK's choke on -mtune=intel, so omit it
 
     ANDROID_CFLAGS="-target x86_64-none-linux-android${ANDROID_API}"
-    ANDROID_CFLAGS="${ANDROID_CFLAGS} -march=x86-64 -msse4.2 -mpopcnt -mtune=intel"
+    ANDROID_CFLAGS="${ANDROID_CFLAGS} -march=x86-64 -msse4.2 -mpopcnt"
     ANDROID_CFLAGS="${ANDROID_CFLAGS} -fstack-protector-strong -funwind-tables -fexceptions -frtti"
     ANDROID_CFLAGS="${ANDROID_CFLAGS} -fno-addrsig -fno-experimental-isel"
 
     ANDROID_CXXFLAGS="-target x86_64-none-linux-android${ANDROID_API}"
-    ANDROID_CXXFLAGS="${ANDROID_CXXFLAGS} -march=x86-64 -msse4.2 -mpopcnt -mtune=intel"
+    ANDROID_CXXFLAGS="${ANDROID_CXXFLAGS} -march=x86-64 -msse4.2 -mpopcnt"
     ANDROID_CXXFLAGS="${ANDROID_CXXFLAGS} -std=c++11 -stdlib=libc++"
     ANDROID_CXXFLAGS="${ANDROID_CXXFLAGS} -fstack-protector-strong -funwind-tables -fexceptions -frtti"
     ANDROID_CXXFLAGS="${ANDROID_CXXFLAGS} -fno-addrsig -fno-experimental-isel"
@@ -303,7 +414,7 @@ case "$ANDROID_CPU" in
     ;;
 esac
 
-echo "Configuring for Android API ${ANDROID_API} ($ANDROID_CPU)"
+echo "Configuring for Android API ${ANDROID_API} on ${ANDROID_CPU}"
 
 #####################################################################
 
@@ -353,9 +464,10 @@ if [ ! -e "${ANDROID_TOOLCHAIN}/$AS" ]; then
     [ "$0" = "${BASH_SOURCE[0]}" ] && exit 1 || return 1
 fi
 
-# Error checking
-if [ ! -e "${ANDROID_TOOLCHAIN}/$LD" ]; then
-    echo "ERROR: Failed to find Android ld. Please edit this script."
+# Error checking. lld location is <NDK>/toolchains/llvm/prebuilt/<host-tag>/bin/ld.lld
+# https://android.googlesource.com/platform/ndk/+/refs/heads/ndk-release-r21/docs/BuildSystemMaintainers.md#Linkers
+if [ "$LD" != "ld.lld" ] && [ ! -e "${ANDROID_TOOLCHAIN}/$LD" ]; then
+    echo "ERROR: Failed to find Android ld. Please edit this script. When using NDK 22 or higher make sure to set ANDROID_LD! (bfd, gold)"
     [ "$0" = "${BASH_SOURCE[0]}" ] && exit 1 || return 1
 fi
 
@@ -430,7 +542,7 @@ fi
 # exported. At Crypto++ 8.6 CPPFLAGS, CXXFLAGS and LDFLAGS were exported.
 
 export IS_ANDROID=1
-export CPP CC CXX LD AS AR RANLIB STRIP OBJDUMP
+export CPP CC CXX LD AS AR NM OBJDUMP RANLIB STRIP
 
 # Do NOT use ANDROID_SYSROOT_INC or ANDROID_SYSROOT_LD
 # https://github.com/android/ndk/issues/894#issuecomment-470837964
