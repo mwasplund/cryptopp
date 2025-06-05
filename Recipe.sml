@@ -1,9 +1,9 @@
 Name: 'CryptoPP'
 Language: 'C++|0'
-Version: '1.2.4'
+Version: 1.2.5
 EnableWarningsAsErrors: false
-Interface: 'Interface.cpp'
 Source: [
+    'Interface.cpp'
     # '3way.cpp'
     # 'adler32.cpp'
     'algebra.cpp'
@@ -112,6 +112,7 @@ Source: [
     # 'pkcspad.cpp'
     # 'poly1305.cpp'
     # 'polynomi.cpp'
+    'primetab.cpp'
     # 'pssr.cpp'
     'pubkey.cpp'
     'queue.cpp'
@@ -180,6 +181,9 @@ Source: [
 AssemblySource: [
     {
         Filter: { System: 'Win32' }
-        Files: [ 'x64dll.asm' ]
+        Files: [ 
+            'cpuid64.asm'
+            'x64dll.asm'
+        ]
     }
 ]
