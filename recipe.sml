@@ -1,6 +1,6 @@
 Name: 'CryptoPP'
 Language: 'C++|0'
-Version: 1.2.6
+Version: 1.2.7
 EnableWarningsAsErrors: false
 Source: [
     'interface.cpp'

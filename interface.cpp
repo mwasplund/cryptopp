@@ -10,7 +10,7 @@ module;
 export module CryptoPP;
 #endif
 
-#include "Interface.h"
+#include "interface.h"
 
 std::string CryptoPP::Sha1::HashBase64(std::string value)
 {
