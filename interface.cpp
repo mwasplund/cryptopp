@@ -12,7 +12,7 @@ export namespace CryptoPP
         /// <summary>
         /// Hash the input value
         /// </summary>
-        static std::string HashBase64(std::string value)
+        static std::string HashBase64Url(std::string value)
         {
             #pragma warning(push)
             #pragma warning(disable : 4127)
@@ -43,7 +43,7 @@ export namespace CryptoPP
         /// <summary>
         /// Hash the input value
         /// </summary>
-        static std::string HashBase64(std::string value)
+        static std::string HashBase64Url(std::string value)
         {
             std::string digest;
 
